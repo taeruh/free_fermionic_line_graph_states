@@ -1,15 +1,15 @@
 # Free Fermionic Line Graph States
 
-See [algorith_desc]. We provide some details and some code on how to prepare eigenstates
+See [algorithm_desc]. We provide some details and some code on how to prepare eigenstates
 corresponding to a free fermionic Hamiltonian based on a line graph solution. There is
 also some code on finding (largish) line graphs in general graphs.
 
 ## General Notes about the Code Base
 
-This is essentially an excerpt of a larger project (WIP) with a real manuscript that is
-not public yet. Therefore, there won't development on this repo here, and the code is not
-very clean as I do not intend to make it a library. Nonetheless, I hope it will be useful
-as a starting reference.
+This is essentially a part of a larger project (WIP) with a real manuscript that is
+not public yet. Therefore, there won't be much development on this repo here, and the code
+is not very clean as I do not intend to make it a library (it helps to read
+[algorithm_desc] first). Nonetheless, I hope it will be useful as a starting reference.
 
 The code is written in Python as we use some python libraries so that we do not have to
 implement everything from scratch. Performance is not the goal here, but rather keeping
@@ -47,5 +47,5 @@ Apache License (Version 2.0).
 
 See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT).
 
-[algorith_desc]:
+[algorithm_desc]:
 https://github.com/taeruh/free_fermionic_line_graph_states/blob/main/algorithm_desc.pdf

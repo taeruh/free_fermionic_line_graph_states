@@ -18,6 +18,8 @@ from models.heisenberg_2d import Heisenberg2D, Interaction
 from models import RandomCoupling, ConstantCoupling
 from hamiltonian import Hamiltonian
 
+#  here we construct the line graph solution of a hamiltonian and then use that solution
+#  to step by step reconstruct the hamiltonian to check whether the solution is correct.
 
 def run():
     seed = 2
@@ -28,17 +30,17 @@ def run():
         Interaction(
             RandomCoupling(-2, 5, seed),
             # RandomCoupling(-3, 2, seed),
-            # RandomCoupling(-1, 1, seed),
+            RandomCoupling(-1, 1, seed),
             # RandomCoupling(-1, 1, seed),
             ConstantCoupling(0),
-            ConstantCoupling(0),
+            # ConstantCoupling(0),
             ConstantCoupling(0),
             RandomCoupling(-5, 1, seed),
             # RandomCoupling(-3, 5, seed),
-            # RandomCoupling(-1, 1, seed),
+            RandomCoupling(-1, 1, seed),
             # RandomCoupling(-1, 1, seed),
             ConstantCoupling(0),
-            ConstantCoupling(0),
+            # ConstantCoupling(0),
             ConstantCoupling(0),
             RandomCoupling(-9, 7, seed),
         ),
@@ -53,15 +55,17 @@ def test(hamiltonian: Hamiltonian) -> None:
 
     total_weight = sum([np.abs(w) for w in weights])
 
+    # find a largish subgraph that is a line graph
     (
         linegraph,
         root_graph,
         root_tree,
-        full_isomorphism,
+        full_isomorphism,  # the mapping from between the root graph and the line graph
+        # splitted into the components
         root_sizes,
         root_graphs,
         root_trees,
-    ) = line_graph.get_line_subgraph(graph, weights, cycle_free=True)
+    ) = line_graph.get_line_subgraph(graph, weights, cycle_free=False)
     full_isomorphism_inverse = {v: k for k, v in full_isomorphism.items()}
 
     line_vertices = set(linegraph.vertices())
@@ -70,6 +74,7 @@ def test(hamiltonian: Hamiltonian) -> None:
     perturbation_vertices = set(graph.vertices()) - line_vertices
     perturbation_weight = sum([np.abs(weights[v]) for v in perturbation_vertices])
 
+    # the mapping between the pauli picture to the majorana picture
     mapping = Mapping(
         root_graph,
         full_isomorphism,
@@ -89,6 +94,7 @@ def test(hamiltonian: Hamiltonian) -> None:
 
     line_matrix = line_hamiltonian.to_matrix()
 
+    # let's start reconstructing the line matrix with the line graph solution
     line_matrix_reconstruction_sum = np.zeros(
         (dim_hilbert_space, dim_hilbert_space), dtype=np.complex128
     )
@@ -96,9 +102,9 @@ def test(hamiltonian: Hamiltonian) -> None:
 
     for sector_code in range(2**num_symmetry_generators):
         symmetry_sector = [0] * num_symmetry_generators
-        for z_idx in range(num_symmetry_generators):
-            if (sector_code >> z_idx) & 1:
-                symmetry_sector[z_idx] = 1
+        for i in range(num_symmetry_generators):
+            if (sector_code >> i) & 1:
+                symmetry_sector[i] = 1
 
         mapping.update_symmetry_sector(symmetry_sector)
 
@@ -122,12 +128,12 @@ def test(hamiltonian: Hamiltonian) -> None:
         majorana_matrix = majorana_diagonalisation.get_h(mapping, weights)
         assert majorana_matrix.shape == (num_majoranas, num_majoranas)
         reconstruct_line_matrix = np.zeros(line_matrix.shape, dtype=np.complex128)
-        for z_idx in range(majorana_matrix.shape[0]):
+        for i in range(majorana_matrix.shape[0]):
             for j in range(majorana_matrix.shape[1]):
-                if majorana_matrix[z_idx, j] != 0.0:
+                if majorana_matrix[i, j] != 0.0:
                     reconstruct_line_matrix += (
-                        majorana_matrix[z_idx, j]
-                        * mapping.psi_to_pauli(z_idx, j, hamiltonian).to_matrix()
+                        majorana_matrix[i, j]
+                        * mapping.psi_to_pauli(i, j, hamiltonian).to_matrix()
                     )
         assert np.allclose(line_matrix, reconstruct_line_matrix)
 
@@ -161,7 +167,7 @@ def test(hamiltonian: Hamiltonian) -> None:
 
         # start to reconstruct the whole hamiltonian from our majorana solution (we don't
         # have a simple operator to diagonalise the hamiltonian since the projectors do
-        # not commute with the clifford preparotion, however, we can do the inverse of the
+        # not commute with the clifford preparation, however, we can do the inverse of the
         # diagonalisation to get the hamiltonian back from the diagonal form)
         line_matrix_reconstruction = np.zeros(line_matrix.shape, dtype=np.complex128)
 

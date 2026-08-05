@@ -13,6 +13,7 @@ def get(
     lamda_matrix: NDArray[np.float64],
     hamiltonian: Hamiltonian,
 ):
+    """find and sort all the stabilisers and symmetries in the line graph solution..."""
     num_majoranas = lamda_matrix.shape[0]
 
     for i in range(0, num_majoranas):
